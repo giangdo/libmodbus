@@ -363,6 +363,7 @@ static int _modbus_rtu_check_integrity(modbus_t *ctx, uint8_t *msg,
     uint16_t crc_received;
     int slave = msg[0];
 
+#if 0
     /* Filter on the Modbus unit identifier (slave) in RTU mode to avoid useless
      * CRC computing. */
     if (slave != ctx->slave && slave != MODBUS_BROADCAST_ADDRESS) {
@@ -372,6 +373,7 @@ static int _modbus_rtu_check_integrity(modbus_t *ctx, uint8_t *msg,
         /* Following call to check_confirmation handles this error */
         return 0;
     }
+#endif
 
     crc_calculated = crc16(msg, msg_length - 2);
     crc_received = (msg[msg_length - 2] << 8) | msg[msg_length - 1];
