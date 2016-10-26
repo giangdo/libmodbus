@@ -1,90 +1,81 @@
-A groovy modbus library
+A commandline multi slaves modbus simulator
 =======================
-
-[![Build Status](https://travis-ci.org/stephane/libmodbus.svg?branch=master)](https://travis-ci.org/stephane/libmodbus)
 
 Overview
 --------
 
-libmodbus is a free software library to send/receive data with a device which
-respects the Modbus protocol. This library can use a serial port or an Ethernet
-connection.
+This modbus simulator is free software library to simulate multiple modbus slaves
+on the same serial port.
 
-The functions included in the library have been derived from the Modicon Modbus
-Protocol Reference Guide which can be obtained from Schneider at
+Practically, there is only one modbus slave on each serial device.
+
+But in development process, sometimes we need multiple modbus slaves in only one
+serial port for testing purpose.
+
+This program support that feature for you.
+
+This program is writen base libmodbus of Stephane [www.libmodbus.org](http://www.libmodbus.org)
+
+Thank him for his work hard.
+
+For Modbus Protocol, it is industrial protocol which is used in various area to connect between
+computers and sensors.
+
 [www.schneiderautomation.com](http://www.schneiderautomation.com).
 
-The license of libmodbus is *LGPL v2.1 or later*.
+The license of modbusMSim is *LGPL v2.1 or later*.
 
-The documentation is available as manual pages (`man libmodbus` to read general
-description and list of available functions) or Web pages
-[www.libmodbus.org/documentation/](http://libmodbus.org/documentation/). The
-documentation is licensed under the Creative Commons Attribution-ShareAlike
-License 3.0 (Unported) (<http://creativecommons.org/licenses/by-sa/3.0/>).
-
-The official website is [www.libmodbus.org](http://www.libmodbus.org).
-
-The library is written in C and designed to run on Linux, Mac OS X, FreeBSD and
-QNX and Windows.
-
-Installation
+Compile and installation
 ------------
 
-You will only need to install automake, autoconf, libtool and a C compiler (gcc
-or clang) to compile the library and asciidoc and xmlto to generate the
-documentation (optional).
+We don't need to install libmodbus before compiling modbusMSim because that library is built-in.
 
-To install, just run the usual dance, `./configure && make install`. Run
-`./autogen.sh` first to generate the `configure` script if required.
+To native compiling:
 
-You can change installation directory with prefix option, eg. `./configure
---prefix=/usr/local/`. You have to check that the installation library path is
-properly set up on your system (*/etc/ld.so.conf.d*) and library cache is up to
-date (run `ldconfig` as root if required).
+	cd modbusMSim/
+	mkdir build/
+	cd build/
+	cmake -DCMAKE_BUILD_TYPE=Release ../
+	make -j4
 
-The library provides a *libmodbus.pc* file to use with `pkg-config` to ease your
-program compilation and linking.
+To cross compiling:
 
-If you want to compile with Microsoft Visual Studio, you need to install
-<https://github.com/chemeris/msinttypes> to fill the absence of stdint.h.
+	You need to specify appropriate path for cross_compiler_tool and target_sysroot.
 
-To compile under Windows, install [MinGW](http://www.mingw.org/) and MSYS then
-select the common packages (gcc, automake, libtool, etc). The directory
-*./src/win32/* contains a Visual C project.
+	cd modbusMSim/
+	mkdir crossBuild/
+	cd crossBuild/
+	cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain.cmake ../cmake -DCMAKE_BUILD_TYPE=Release ../
+	make -j4
 
-To compile under OS X with [homebrew](http://mxcl.github.com/homebrew/), you
-will need to install the following dependencies first: `brew install autoconf
-automake libtool`.
+After build finish we will have two executable binary in build folder
 
-Documentation
--------------
+	build/ctrlSlave/ctrlSlave
+	build/mulSlaveSim/mulSlaveSim
 
-The documentation is available [online](http://libmodbus.org/documentation) or
-as manual pages after installation.
-
-The documentation is based on
-[AsciiDoc](http://www.methods.co.nz/asciidoc/).  Only man pages are built
-by default with `make` command, you can run `make htmldoc` in *docs* directory
-to generate HTML files.
-
-Testing
+Usage
 -------
+	* Run mulSlaveSim first:
+		mulSlaveSim [-s SerialDevice] [-b baudrate]
+		EX: 
+		./mulSlaveSim -s /dev/ttyUSB0 -b 1200
 
-Some tests are provided in *tests* directory, you can freely edit the source
-code to fit your needs (it's Free Software :).
+	* Run ctrlSlave to change or read modbus resister value in mulSlaveSim.
+		ctrlSlave [slaveID] [r/s] [modbus value]
+		[slaveID] is decimal format
+		[modbus value] is in hexadecimal format, if you want to set modbus value, you need to specify all 16 registers
 
-See *tests/README* for a description of each program.
+		EX:
+    	+ To read register value of slave 28: (return register will be in hexadecimal format)
+    	   ./ctrlSlave 28 r
+    	+ To read register value of slave 230: (return register will be in hexadecimal format)
+    	   ./ctrlSlave 230 r
+    	+ To read register value of all slave from 1 to 250: (return register will be in hexadecimal format)
+    	   ./ctrlSlave a r
 
-For a quick test of libmodbus, you can run the following programs in two shells:
-
-1. ./unit-test-server
-2. ./unit-test-client
-
-By default, all TCP unit tests will be executed (see --help for options).
-
-It's also possible to run the unit tests with `make check`.
-
-To report a bug or to contribute
---------------------------------
-
-See [CONTRIBUTING](CONTRIBUTING.md) document.
+    	+ To set register value of slave 28: (value of register need to be in hexadecimal format)
+    	   ./ctrlSlave 28 s ab0 ffd0 ae09 1 1 1 1 1 9 a a b c d e f
+    	+ To set register value of slave 230: (value of register need to be in hexadecimal format)
+    	   ./ctrlSlave 230 s ff ffd0 ae09 1 1 1 1 1 9 a a b c d e f
+    	+ To set register value of all slave from 1 to 250: (value of register need to be in hexadecimal format)
+    	   ./ctrlSlave a s ab0 ffd0 ae09 1 1 1 1 1 9 a a b c d e f
