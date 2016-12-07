@@ -8,7 +8,7 @@
 
 static const int COMMON_SLAVE_ID = 1;
 
-#define MAX_NUM_MODBUS_SLAVE 254
+#define MAX_NUM_MODBUS_SLAVE 255
 static const int BUFSIZE = 1024;
 /* Modbus Map Constants */
 static const unsigned int BITS_ADDRESS = 0;
